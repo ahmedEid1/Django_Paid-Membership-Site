@@ -26,6 +26,14 @@ def join(request):
     return render(request, 'plans/join.html')
 
 
+def checkout(request):
+    return render(request, 'plans/checkout.html')
+
+
+def settings(request):
+    return render(request, 'registration/settings.html')
+
+
 class SignUp(generic.CreateView):
     form_class = CustomSignUp
     success_url = reverse_lazy('home')
@@ -41,3 +49,4 @@ class SignUp(generic.CreateView):
         login(self.request, new_user)
 
         return valid
+
