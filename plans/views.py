@@ -15,7 +15,7 @@ def home(request):
 
 
 def plan(request, plan_id):
-    the_plan = get_object_or_404(FitnessPlan, plan_id)
+    the_plan = get_object_or_404(FitnessPlan, pk=plan_id)
     if the_plan.premium:
         return redirect('join')
     return render(request, 'plans/plan.html',
