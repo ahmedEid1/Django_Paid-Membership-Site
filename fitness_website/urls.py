@@ -20,5 +20,9 @@ from plans import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home')
+    path('', views.home, name='home'),
+    path('plan/<int:plan_id>', views.plan, name='plan'),
+    path('join', views.join, name='join'),
+    path('auth/', include('django.contrib.auth.urls')),
+    path('auth/signup', views.SignUp.as_view(), name='signup'),
 ]
