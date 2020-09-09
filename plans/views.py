@@ -36,6 +36,28 @@ def checkout(request):
     coupons = {'friend': 5, 'brother': 6, 'me': 90}
 
     if request.method == 'POST':
+        stripe_customer = stripe.Customer.create(email=request.user.email,
+                                                 source=request.POST['stripeToken'])
+        plan = 'price_1HPUMpB5LDdfWvGkZZzzR2X9'
+        if request.POST['plan'] == 'yearly':
+            plan = 'price_1HPUNoB5LDdfWvGksEeI9ie9'
+
+        if request.POST['coupon'] in coupons:
+            coupon = request.POST['coupon'].lower()
+            percentage = coupons[coupon]
+            try:
+                coupon = stripe.Coupon.create(duration='once',
+                                     id=request.POST['coupon'].lower(), percent_off=percentage)
+            except:
+                pass
+
+            subscription = stripe.Subscription.create(customer=stripe_customer.id,
+                                                      items=[{'plan': plan}], coupon=request.POST['coupon'].lower())
+
+        else:
+            subscription = stripe.Subscription.create(customer=stripe_customer.id,
+                                                      items=[{'plan': plan}])
+
         return redirect('home')
     plan = "yearly"
     coupon = 'none'
