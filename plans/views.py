@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.urls import reverse_lazy
@@ -26,7 +27,10 @@ def join(request):
     return render(request, 'plans/join.html')
 
 
+@login_required
 def checkout(request):
+    if request.method == 'POST':
+        return redirect('home')
     return render(request, 'plans/checkout.html')
 
 
@@ -39,7 +43,6 @@ class SignUp(generic.CreateView):
     success_url = reverse_lazy('home')
     template_name = 'registration/signup.html'
 
-
     def form_valid(self, form):
         valid = super(SignUp, self).form_valid(form)
 
@@ -50,4 +53,3 @@ class SignUp(generic.CreateView):
         login(self.request, new_user)
 
         return valid
-

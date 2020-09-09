@@ -6,4 +6,7 @@ tasks :
  - allowing the user to cancel subscription
     
 
+
+Course_name : Building a Paid Membership Site with Django
+Course_url : https://www.linkedin.com/learning/building-a-paid-membership-site-with-django
  
