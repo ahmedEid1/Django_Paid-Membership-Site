@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login
 import stripe
 
-from plans.models import FitnessPlan
+from plans.models import FitnessPlan, Customer
 from .forms import CustomSignUp
 
 # secret
@@ -22,6 +22,14 @@ def home(request):
 def plan(request, plan_id):
     the_plan = get_object_or_404(FitnessPlan, pk=plan_id)
     if the_plan.premium:
+        if request.user.is_authenticated:
+            try:
+                if request.user.customer.membership:
+                    return render(request, 'plans/plan.html',
+                                      {'plan': the_plan})
+            except Customer.DoesNotExist:
+                return redirect('join')
+
         return redirect('join')
     return render(request, 'plans/plan.html',
                   {'plan': the_plan})
@@ -33,6 +41,12 @@ def join(request):
 
 @login_required
 def checkout(request):
+    try:
+        if request.user.customer.membership:
+            return redirect('settings')
+    except Customer.DoesNotExist:
+        pass
+
     coupons = {'friend': 5, 'brother': 6, 'me': 90}
 
     if request.method == 'POST':
@@ -57,6 +71,13 @@ def checkout(request):
         else:
             subscription = stripe.Subscription.create(customer=stripe_customer.id,
                                                       items=[{'plan': plan}])
+        customer = Customer()
+        customer.user = request.user
+        customer.stripe_id = stripe_customer.id
+        customer.membership = True
+        customer.cancel_at_period_end = False
+        customer.stripe_subscription_id = subscription.id
+        customer.save()
 
         return redirect('home')
     plan = "yearly"
