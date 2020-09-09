@@ -3,9 +3,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login
+import stripe
 
 from plans.models import FitnessPlan
 from .forms import CustomSignUp
+
+# secret
+stripe.api_key = 'sk_test_51HPUBcB5LDdfWvGkjQvngmIb9QXhjOHJAgHdm56XRONgln7dWnCtXCBOkXpOLgF1OvROroUaTVbNCWBJKvks99gx00xSwocwkS'
 
 
 # Create your views here.
@@ -29,9 +33,40 @@ def join(request):
 
 @login_required
 def checkout(request):
+    coupons = {'friend': 5, 'brother': 6, 'me': 90}
+
     if request.method == 'POST':
         return redirect('home')
-    return render(request, 'plans/checkout.html')
+    plan = "yearly"
+    coupon = 'none'
+    price = 100000
+    og_dollar = 100
+    coupon_dollar = 0
+    final_dollar = 100
+    if request.method == "GET" and 'plan' in request.GET:
+        if request.GET['plan'] == 'monthly':
+            plan = "monthly"
+            coupon = 'none'
+            price = 10000
+            og_dollar = 10
+            coupon_dollar = 0
+            final_dollar = 10
+
+    if request.method == "GET" and 'coupon' in request.GET:
+        if request.GET['coupon'].lower() in coupons:
+            # update the coupon
+            coupon = request.GET['coupon'].lower()
+
+            percentage = coupons[coupon]
+            coupon_price = int(percentage / 100 * price)
+            # update price and coupon amount
+            price -= coupon_price
+            coupon_dollar = str(coupon_price)[:-2] + '.' + str(coupon_price)[-2:]
+            final_dollar = str(price)[:-2] + '.' + str(price)[-2:]
+
+    return render(request, 'plans/checkout.html',
+                  {"plan": plan, 'coupon': coupon, 'price': price, 'og_dollar': og_dollar,
+                   'coupon_dollar': coupon_dollar, 'final_dollar': final_dollar})
 
 
 def settings(request):
