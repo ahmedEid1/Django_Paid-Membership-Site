@@ -1,4 +1,5 @@
-from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.urls import reverse_lazy
@@ -13,6 +14,24 @@ stripe.api_key = 'sk_test_51HPUBcB5LDdfWvGkjQvngmIb9QXhjOHJAgHdm56XRONgln7dWnCtX
 
 
 # Create your views here.
+
+# updating our customer plans
+@user_passes_test(lambda u: u.is_superuser)
+def updateaccounts(request):
+    customers = Customer.objects.all()
+    for customer in customers:
+        subscription = stripe.Subscription.retrieve(customer.stripe_subscription_id)
+        if subscription.status != 'active':
+            customer.membership = False
+        customer.membership = True
+
+        # in case we update it in stripe account mby hand
+        customer.cancel_at_period_end = subscription.cancel_at_period_end
+        customer.save()
+    return HttpResponse("update completed ")
+
+
+
 def home(request):
     plans = FitnessPlan.objects.all()
     return render(request, 'plans/home.html',
@@ -154,3 +173,4 @@ class SignUp(generic.CreateView):
         login(self.request, new_user)
 
         return valid
+

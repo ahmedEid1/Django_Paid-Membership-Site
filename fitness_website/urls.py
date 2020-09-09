@@ -27,5 +27,6 @@ urlpatterns = [
     path('auth/signup', views.SignUp.as_view(), name='signup'),
     path('checkout', views.checkout, name='checkout'),
     path('auth/settings', views.settings, name='settings'),
+    path('updateaccounts', views.updateaccounts, name='updateaccounts')
 
 ]
